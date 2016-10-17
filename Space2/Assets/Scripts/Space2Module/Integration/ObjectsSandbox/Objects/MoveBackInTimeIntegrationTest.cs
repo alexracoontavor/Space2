@@ -1,22 +1,23 @@
 ﻿using System;
+using System.Linq;
 using Assets.Infrastructure.Architecture.Modulux;
 using Assets.Scripts.Space2Module.Controllers.ObjectsPopulation;
 using Assets.Scripts.Space2Module.Redux.Actions;
 using Assets.Scripts.Space2Module.Redux.State;
 using UniRx;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Assets.Scripts.Space2Module.Integration.ObjectsSandbox.Objects
 {
-    public class LoadObjectsIntegrationTest : MonoBehaviour
+    public class MoveBackInTimeIntegrationTest : MonoBehaviour
     {
+
         void Awake()
         {
             Setup.Setup.Reset();
         }
 
-        void Start ()
+        void Start()
         {
             /*
                 DONE Generate data for objects
@@ -38,56 +39,69 @@ namespace Assets.Scripts.Space2Module.Integration.ObjectsSandbox.Objects
                  DONE Step back in time
                     DONE re-generate data from objects, compare results
 
-                Step forward in time
-                    re-generate data from objects, compare results
+                DONE Step forward in time
+                    DONE re-generate data from objects, compare results
             */
 
             var controller = FindObjectOfType<ObjectsController>();
             controller.Reset();
-            
+
             var stateStream = ModuluxRoot.GetStateStream<Space2State>();
 
             Observable
                 .Timer(TimeSpan.FromMilliseconds(1000))
-                .CombineLatest(stateStream, (i, stream)=>stream)
+                .CombineLatest(stateStream, (i, stream) => stream)
                 .First()
                 .Subscribe(s =>
                 {
-                    ActionsCreator.StepInTime(int.MinValue);
+                    ActionsCreator.StepInTime(s.Timeline.Timeline.Length + 1);
                 })
                 .AddTo(this);
 
+            //something about this stream building fucks Unity up and it goes FUBAR while throwing UNetWeaver error: Exception :System.ArgumentException: An element with the same key already exists in the dictionary.
+            //hence all the crap with isReadyForStepForward
             var objectsUpdatedStream = stateStream
                 .Where(s => s.Timeline != null)
                 .Distinct(s => s.Timeline.IsWaitingToUpdateObjects)
                 .Where(s => s.Timeline.IsWaitingToUpdateObjects);
 
+            var isReadyForStepForward = false;
+
             objectsUpdatedStream
-                .Subscribe(s =>
+                .First()
+                .Subscribe(state=>
                 {
                     var newObjects = controller.ObjectsPopulator.GetObjectsData();
 
-                    if (!ObjectDataHelpers.CompareObjectsDatas(newObjects, s.Timeline.Timeline[0]))
+                    if (!ObjectDataHelpers.CompareObjectsDatas(newObjects, state.Timeline.Timeline[0]))
                         IntegrationTest.Fail();
 
-                    ActionsCreator.StepInTime(int.MaxValue);
-                })
-                .AddTo(this);
+                    isReadyForStepForward = true;
+
+                    ActionsCreator.StepInTime(-(state.Timeline.Timeline.Length + 1));
+                });
 
             stateStream
-                .SkipUntil(objectsUpdatedStream)
-                .Skip(1)
-                .Subscribe(s =>
+                .Subscribe(state =>
                 {
-                    var newObjects = controller.ObjectsPopulator.GetObjectsData();
-
-                    if (!ObjectDataHelpers.CompareObjectsDatas(newObjects, s.Timeline.Timeline[s.Timeline.Timeline.Length+1]))
-                        IntegrationTest.Fail();
-                    else
+                    if (isReadyForStepForward)
                     {
-                        IntegrationTest.Pass();
+                        var newObjects = controller.ObjectsPopulator.GetObjectsData();
+
+                        if (Enumerable.Range(0, state.Timeline.Timeline.Length - 1).All(i=> ObjectDataHelpers.CompareObjectsDatas(state.Timeline.Timeline[0], state.Timeline.Timeline[i])))
+                        {
+                            IntegrationTest.Fail("All the timeline is the same!");
+                        }
+                        else if (ObjectDataHelpers.CompareObjectsDatas(newObjects,state.Timeline.Timeline[state.Timeline.Timeline.Length - 1]))
+                        {
+                            IntegrationTest.Fail("Freshly collected objects data is not the same as retrieved from save!");
+                        }
+                        else
+                        {
+                            IntegrationTest.Pass();
+                        }
                     }
-                }).AddTo(this);
+                });
         }
     }
 }

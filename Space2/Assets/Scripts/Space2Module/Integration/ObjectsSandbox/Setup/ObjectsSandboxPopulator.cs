@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Assets.Infrastructure.CoreTools.Extensions;
 using Assets.Scripts.Space2Module.Controllers.ObjectsPopulation;
+using UniRx;
 using UnityEngine;
 
 namespace Assets.Scripts.Space2Module.Integration.ObjectsSandbox.Setup
@@ -11,10 +12,10 @@ namespace Assets.Scripts.Space2Module.Integration.ObjectsSandbox.Setup
         public int NumObjects = 5;
         public float SpreadRadius = 10f;
         public float MaxForceToApply = 10f;
-
+        
         public void Start()
         {
-            AddObjects();
+            Observable.TimerFrame(2).Subscribe(_=>AddObjects());
         }
 
         public void AddObjects()

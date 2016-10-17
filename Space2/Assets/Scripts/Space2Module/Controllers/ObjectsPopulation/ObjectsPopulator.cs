@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Assets.Infrastructure.CoreTools.Extensions;
 using Assets.Scripts.Space2Module.Redux.State;
+using UniRx.Operators;
 
 namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
 {
@@ -72,13 +73,10 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
 
         public ObjectData[] GetObjectsData()
         {
-            UpdateObjectsData();
-            return _objectsData.Values.Select(s => s.Data).ToArray();
-        }
+            var data = _objectsData.Values
+                .Select(v => ObjectsPopulatorHelper.PopulatableObjectToData(v.Populatable)).ToArray();
 
-        private void UpdateObjectsData()
-        {
-            _objectsData.Values.ForEach(v=>v.Data= ObjectsPopulatorHelper.PopulatableObjectToData(v.Populatable));
+            return data;
         }
     }
 }

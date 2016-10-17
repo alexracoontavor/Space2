@@ -1,7 +1,6 @@
 ﻿using System;
 using Assets.Infrastructure.Architecture.Modulux;
 using Assets.Infrastructure.Assets.Infrastructure.CoreTools.Extensions;
-using Assets.Scripts.Space2Module.Integration.ObjectsSandbox.Setup;
 using Assets.Scripts.Space2Module.Redux.Actions;
 using Assets.Scripts.Space2Module.Redux.State;
 using UniRx;
@@ -15,13 +14,17 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
         private IDisposable _objectsFromDataSubscription;
 
         public int SampleRate = 10;
-        public const int MinTickMs = 20;
-
+        public const int MinTickMs = 10;
+        
         public ObjectsPopulator ObjectsPopulator { get { return _populator; } }
+
+        //THIS IS A FUCKING UGLY HACK DUE TO TIME PAUSE NOT BEING IMPLEMENTED
+        public bool IsUpdating = true;
 
         public void Start()
         {
-            SubscribeToGenerateObjectUpdates(TickedStream(SampleRate), _populator).AddTo(this);
+            SubscribeToGenerateObjectUpdates(TickedStream(SampleRate).Where(s=>IsUpdating), _populator).AddTo(this);
+            Reset();
         }
 
         public void Reset()
@@ -42,6 +45,7 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
                 .Subscribe(s =>
                 {
                     populator.PopulateObjectsFromData(s.Timeline.CurrentObjects);
+                    ActionsCreator.StepUpdateComplete();
                 });
         }
 
@@ -57,7 +61,9 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
             return stream
                 .Subscribe(s =>
                 {
-                    ActionsCreator.UpdateObjects(populator.GetObjectsData());
+                    var d = populator.GetObjectsData();
+                    if (d.Length > 0)
+                        ActionsCreator.UpdateObjects(d);
                 });
         }
     }

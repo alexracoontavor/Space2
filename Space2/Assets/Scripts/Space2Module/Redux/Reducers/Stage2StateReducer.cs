@@ -63,6 +63,19 @@ namespace Assets.Scripts.Space2Module.Redux.Reducers
                 };
             }
 
+            var stepCompleteAction = action as StepUpdateCompleteAction;
+
+            if (stepCompleteAction != null && prevState.Timeline != null)
+            {
+                return new ObjectsTimeline
+                {
+                    CurrentIndex = prevState.Timeline.CurrentIndex,
+                    Timeline = prevState.Timeline.Timeline,
+                    CurrentObjects = prevState.Timeline.CurrentObjects,
+                    IsWaitingToUpdateObjects = false
+                };
+            }
+
             return prevState.Timeline;
         }
     }

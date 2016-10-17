@@ -15,6 +15,15 @@ namespace Assets.Scripts.Space2Module.Redux.Actions
         {
             ModuluxRoot.Store.Dispatch(new StepInTimeRequestAction() { Steps = numSteps });
         }
+
+        public static void StepUpdateComplete()
+        {
+            ModuluxRoot.Store.Dispatch(new StepUpdateCompleteAction());
+        }
+    }
+
+    public class StepUpdateCompleteAction : IAction
+    {
     }
 
     public class ObjectsDataUpdatedAction : IAction
