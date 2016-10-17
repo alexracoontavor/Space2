@@ -28,3 +28,6 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+Space2/Library/
+Space2/ProjectSettings/
+Space2/Temp/
