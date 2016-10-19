@@ -138,8 +138,8 @@ namespace Assets.Editor.Tests.Space2Module.Controllers.ObjectsPopulation
 
             var dataFromObjects = populator.GetObjectsData();
 
-            Assert.AreEqual(dataFromObjects[0].Transform.Position, objectsData[0].Transform.Position, "Data was not updated from object");
-            Assert.AreEqual(dataFromObjects[1].Transform.Position, objectsData[1].Transform.Position, "Data was updated but object wan't?!");
+            Assert.IsFalse(ObjectDataHelpers.CompareVector3Datas(dataFromObjects[0].Transform.Position, objectsData[0].Transform.Position), "Data was not updated from object");
+            Assert.IsTrue(ObjectDataHelpers.CompareVector3Datas(dataFromObjects[1].Transform.Position, objectsData[1].Transform.Position), "Data was updated but object wan't?!");
         }
     }
 }
