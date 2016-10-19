@@ -73,7 +73,7 @@ namespace Assets.Scripts.Space2Module.Integration.ObjectsSandbox.Objects
                 {
                     var newObjects = controller.ObjectsPopulator.GetObjectsData();
 
-                    if (!ObjectDataHelpers.CompareObjectsDatas(newObjects, state.Timeline.Timeline[0]))
+                    if (ObjectDataHelpers.CompareObjectsDatas(newObjects, state.Timeline.Timeline[0]))
                         IntegrationTest.Fail();
 
                     isReadyForStepForward = true;

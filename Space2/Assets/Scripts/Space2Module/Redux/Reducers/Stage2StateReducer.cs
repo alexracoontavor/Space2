@@ -5,6 +5,7 @@ using Assets.Infrastructure.Architecture.Modulux.State;
 using Assets.Infrastructure.Architecture.Redux;
 using Assets.Scripts.Space2Module.Redux.Actions;
 using Assets.Scripts.Space2Module.Redux.State;
+using UnityEngine;
 
 namespace Assets.Scripts.Space2Module.Redux.Reducers
 {
@@ -34,23 +35,25 @@ namespace Assets.Scripts.Space2Module.Redux.Reducers
 
                 var tl = prevState.Timeline.Timeline == null ? new List<ObjectData[]>() : prevState.Timeline.Timeline.ToList();
                 tl.Add(dataUpdatedAction.Objects);
-                return new ObjectsTimeline() {Timeline = tl.ToArray(), CurrentIndex = prevState.Timeline.Timeline.Length-1, CurrentObjects = dataUpdatedAction.Objects};
+
+                return new ObjectsTimeline()
+                {
+                    Timeline = tl.ToArray(),
+                    CurrentIndex = prevState.Timeline.Timeline.Length-1,
+                    CurrentObjects = dataUpdatedAction.Objects,
+                    GameSpeed = prevState.Timeline.GameSpeed
+                };
             }
 
             var stepAction = action as StepInTimeRequestAction;
 
             if (stepAction != null && prevState.Timeline != null && prevState.Timeline.Timeline.Length > 0)
             {
-                int index;
+                var steps = prevState.Timeline.CurrentIndex + stepAction.Steps;
 
-                if (stepAction.Steps > 0)
-                {
-                    index = Math.Min(prevState.Timeline.Timeline.Length - 1, prevState.Timeline.CurrentIndex + stepAction.Steps);
-                }
-                else
-                {
-                    index = Math.Max(0, prevState.Timeline.CurrentIndex + stepAction.Steps);
-                }
+                var index = stepAction.Steps > 0 ? 
+                    Math.Min(prevState.Timeline.Timeline.Length - 1, steps) : 
+                    Math.Max(0, steps);
 
                 var currentObjects = prevState.Timeline.Timeline[index];
 
@@ -59,7 +62,8 @@ namespace Assets.Scripts.Space2Module.Redux.Reducers
                     CurrentIndex = index,
                     Timeline = prevState.Timeline.Timeline,
                     CurrentObjects = currentObjects,
-                    IsWaitingToUpdateObjects = true
+                    IsWaitingToUpdateObjects = true,
+                    GameSpeed = 0
                 };
             }
 
@@ -72,7 +76,35 @@ namespace Assets.Scripts.Space2Module.Redux.Reducers
                     CurrentIndex = prevState.Timeline.CurrentIndex,
                     Timeline = prevState.Timeline.Timeline,
                     CurrentObjects = prevState.Timeline.CurrentObjects,
-                    IsWaitingToUpdateObjects = false
+                    IsWaitingToUpdateObjects = false,
+                    GameSpeed = prevState.Timeline.GameSpeed
+                };
+            }
+
+            var speedChangeAction = action as SpeedChangeRequestAction;
+
+            if (speedChangeAction != null)
+            {
+                var tolerance = 0.01f;
+                var isUnpausing = prevState.Timeline.GameSpeed < tolerance && speedChangeAction.Speed > tolerance;
+                var isPausing = prevState.Timeline.GameSpeed > tolerance && speedChangeAction.Speed < tolerance;
+
+                var t = isUnpausing
+                    ? prevState.Timeline.Timeline.Take(prevState.Timeline.CurrentIndex).ToArray()
+                    : prevState.Timeline.Timeline;
+
+                if (isUnpausing)
+                    Debug.Log("Unpausing");
+                if (isPausing)
+                    Debug.Log("Pausing");
+
+                return new ObjectsTimeline
+                {
+                    CurrentIndex = prevState.Timeline.CurrentIndex,
+                    Timeline = t,
+                    CurrentObjects = prevState.Timeline.CurrentObjects,
+                    IsWaitingToUpdateObjects = false,
+                    GameSpeed = Mathf.Min(1f, Mathf.Max(0, speedChangeAction.Speed))
                 };
             }
 

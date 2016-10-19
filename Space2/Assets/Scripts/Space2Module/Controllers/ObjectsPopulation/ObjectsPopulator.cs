@@ -47,6 +47,7 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
                 if (d != null)
                 {
                    ObjectsPopulatorHelper.FromData(p.transform, d);
+                   ObjectsPopulatorHelper.FromData(p.Rigidbody, d);
                 }
             });
 
@@ -73,7 +74,7 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
 
         public ObjectData[] GetObjectsData()
         {
-            var data = _objectsData.Values
+            var data = _objectsData.Values.Where(v=>v.Populatable != null)
                 .Select(v => ObjectsPopulatorHelper.PopulatableObjectToData(v.Populatable)).ToArray();
 
             return data;

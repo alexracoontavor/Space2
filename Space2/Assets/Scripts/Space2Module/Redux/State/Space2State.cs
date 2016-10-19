@@ -24,6 +24,7 @@ namespace Assets.Scripts.Space2Module.Redux.State
     [Serializable]
     public class ObjectsTimeline
     {
+        public float GameSpeed = 1f;
         public bool IsWaitingToUpdateObjects = false;
         public int CurrentIndex;
         public ObjectData[] CurrentObjects;

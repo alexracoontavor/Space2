@@ -20,6 +20,11 @@ namespace Assets.Scripts.Space2Module.Redux.Actions
         {
             ModuluxRoot.Store.Dispatch(new StepUpdateCompleteAction());
         }
+
+        public static void SpeedChangeRequest(float newSpeed)
+        {
+            ModuluxRoot.Store.Dispatch(new SpeedChangeRequestAction() {Speed = newSpeed});
+        }
     }
 
     public class StepUpdateCompleteAction : IAction
@@ -34,5 +39,10 @@ namespace Assets.Scripts.Space2Module.Redux.Actions
     public class StepInTimeRequestAction : IAction
     {
         public int Steps;
+    }
+
+    public class SpeedChangeRequestAction : IAction
+    {
+        public float Speed;
     }
 }

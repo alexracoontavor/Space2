@@ -53,7 +53,7 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsSandbox.UI.Views
             Slider.value = _currentIndex;
 
 
-            TimelineText.text = string.Format("{0}/{1}", _currentIndex, _maxIndex);
+            TimelineText.text = string.Format("{0}/{1}", _currentIndex+1, _maxIndex);
         }
     }
 }

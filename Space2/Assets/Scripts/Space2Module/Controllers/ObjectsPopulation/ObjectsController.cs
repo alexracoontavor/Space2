@@ -15,15 +15,15 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
 
         public int SampleRate = 10;
         public const int MinTickMs = 10;
-        
+        private float _dynamicRate = 10f;
+
         public ObjectsPopulator ObjectsPopulator { get { return _populator; } }
-
-        //THIS IS A FUCKING UGLY HACK DUE TO TIME PAUSE NOT BEING IMPLEMENTED
-        public bool IsUpdating = true;
-
+        
         public void Start()
         {
-            SubscribeToGenerateObjectUpdates(TickedStream(SampleRate).Where(s=>IsUpdating), _populator).AddTo(this);
+            _dynamicRate = SampleRate;
+            SubscribeToGenerateObjectUpdates(TickedStream((int) _dynamicRate), _populator).AddTo(this);
+            ModuluxRoot.GetStateStream<Space2State>().Where(s=>s.Timeline!=null&&s.Timeline.Timeline!=null).Subscribe(s=> _dynamicRate = Time.timeScale * SampleRate).AddTo(this);
             Reset();
         }
 
@@ -52,8 +52,10 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
         public static IObservable<long> TickedStream(int sampleRate)
         {
             return Observable
-                .Interval(TimeSpan.FromMilliseconds(MinTickMs))
-                .SampleEvery(()=>sampleRate);
+                //.Interval(TimeSpan.FromMilliseconds(MinTickMs))
+                .EveryEndOfFrame()
+                .SampleEvery(()=>sampleRate)
+                .Where(s=>Time.timeScale>0);
         }
 
         public static IDisposable SubscribeToGenerateObjectUpdates(IObservable<long> stream, ObjectsPopulator populator)

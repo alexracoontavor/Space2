@@ -38,7 +38,9 @@ namespace Assets.Editor.Tests.Space2Module.Controllers.ObjectsPopulation
             var populator = new ObjectsPopulator();
 
             var o0 = new GameObject().AddComponent<PopulatableObject>();
+            o0.Rigidbody = o0.gameObject.AddComponent<Rigidbody>();
             var o1 = new GameObject().AddComponent<PopulatableObject>();
+            o1.Rigidbody = o1.gameObject.AddComponent<Rigidbody>();
 
             var t0 = new Vector3Data() {x = 10f, y = 10f, z = 10f};
             var t1 = new Vector3Data() {x = 30f, y = 30f, z = 30f};
@@ -61,17 +63,15 @@ namespace Assets.Editor.Tests.Space2Module.Controllers.ObjectsPopulation
         [Test]
         public void ReturnExtraDataWhenPopulatingFromDataTest()
         {
-            //TODO - register some objects. Populate from data that has more than registered
             var testId = "testId";
             var testFloatVal = 20f;
 
             var populator = new ObjectsPopulator();
 
             var o0 = new GameObject().AddComponent<PopulatableObject>();
+            o0.Rigidbody = o0.gameObject.AddComponent<Rigidbody>();
             var o1 = new GameObject().AddComponent<PopulatableObject>();
-
-            var t0 = new Vector3Data() {x = 10f, y = 10f, z = 10f};
-            var t1 = new Vector3Data() {x = 30f, y = 30f, z = 30f};
+            o1.Rigidbody = o1.gameObject.AddComponent<Rigidbody>();
 
             populator.Register(o0);
             populator.Register(o1);
@@ -91,19 +91,19 @@ namespace Assets.Editor.Tests.Space2Module.Controllers.ObjectsPopulation
         [Test]
         public void ReturnExtraPopulatablesWhenPopulatingFromDataTest()
         {
-            //TODO - register some objects. Populate from data that has more than registered
             var testId = "testId";
             var testFloatVal = 20f;
 
             var populator = new ObjectsPopulator();
 
-            var o0 = new GameObject().AddComponent<PopulatableObject>();
-            var o1 = new GameObject().AddComponent<PopulatableObject>();
-            var o2 = new GameObject().AddComponent<PopulatableObject>();
 
-            var t0 = new Vector3Data() {x = 10f, y = 10f, z = 10f};
-            var t2 = new Vector3Data() {x = 20f, y = 20f, z = 20f};
-            var t1 = new Vector3Data() {x = 30f, y = 30f, z = 30f};
+            var o0 = new GameObject().AddComponent<PopulatableObject>();
+            o0.Rigidbody = o0.gameObject.AddComponent<Rigidbody>();
+            var o1 = new GameObject().AddComponent<PopulatableObject>();
+            o1.Rigidbody = o1.gameObject.AddComponent<Rigidbody>();
+            var o2 = new GameObject().AddComponent<PopulatableObject>();
+            o2.Rigidbody = o2.gameObject.AddComponent<Rigidbody>();
+
 
             populator.Register(o0);
             populator.Register(o1);
@@ -125,9 +125,12 @@ namespace Assets.Editor.Tests.Space2Module.Controllers.ObjectsPopulation
             var populator = new ObjectsPopulator();
 
             var o0 = new GameObject().AddComponent<PopulatableObject>();
+            o0.Rigidbody = o0.gameObject.AddComponent<Rigidbody>();
             var o1 = new GameObject().AddComponent<PopulatableObject>();
+            o1.Rigidbody = o1.gameObject.AddComponent<Rigidbody>();
 
             var t0 = new Vector3() { x = 10f, y = 10f, z = 10f };
+            var t1 = new Vector3() { x = 10f, y = 10f, z = 10f };
 
             populator.Register(o0);
             populator.Register(o1);
@@ -135,11 +138,14 @@ namespace Assets.Editor.Tests.Space2Module.Controllers.ObjectsPopulation
             var objectsData = populator.GetObjectsData();
 
             o0.transform.position = t0;
+            o0.Rigidbody.velocity = t1;
 
             var dataFromObjects = populator.GetObjectsData();
 
-            Assert.AreEqual(dataFromObjects[0].Transform.Position, objectsData[0].Transform.Position, "Data was not updated from object");
-            Assert.AreEqual(dataFromObjects[1].Transform.Position, objectsData[1].Transform.Position, "Data was updated but object wan't?!");
+            Assert.IsFalse(ObjectDataHelpers.CompareVector3Datas(dataFromObjects[0].Transform.Position, objectsData[0].Transform.Position), "Transform data was not updated from object");
+            Assert.IsTrue(ObjectDataHelpers.CompareVector3Datas(dataFromObjects[1].Transform.Position, objectsData[1].Transform.Position), "Transform data was updated but object wan't?!");
+            Assert.IsFalse(ObjectDataHelpers.CompareVector3Datas(dataFromObjects[0].Rigidbody.velocity, objectsData[0].Rigidbody.velocity), "Rigidbody data was not updated from object");
+            Assert.IsTrue(ObjectDataHelpers.CompareVector3Datas(dataFromObjects[1].Rigidbody.velocity, objectsData[1].Rigidbody.velocity), "Rigidbody data was updated but object wan't?!");
         }
     }
 }

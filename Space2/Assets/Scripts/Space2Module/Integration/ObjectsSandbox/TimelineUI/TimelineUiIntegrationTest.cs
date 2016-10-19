@@ -24,8 +24,8 @@ namespace Assets.Scripts.Space2Module.Integration.ObjectsSandbox.TimelineUI
         void Start ()
         {
             /*
-                TODO - see that view is updated on population
-                TODO - see that input translates into update of objects
+                DONE - see that view is updated on population
+                DONE - see that input translates into update of objects
             */
 
             var numUpdates = 5;

@@ -12,7 +12,8 @@ namespace Assets.Scripts.Space2Module.Integration.ObjectsSandbox.Setup
         public int NumObjects = 5;
         public float SpreadRadius = 10f;
         public float MaxForceToApply = 10f;
-        
+        public bool IsAddingInitialForce = false;
+
         public void Start()
         {
             Observable.TimerFrame(2).Subscribe(_=>AddObjects());
@@ -25,7 +26,7 @@ namespace Assets.Scripts.Space2Module.Integration.ObjectsSandbox.Setup
                 {
                     var o = Instantiate(PhysicalObjectPrefab);
                     o.transform.position = o.transform.position + (Random.insideUnitSphere*SpreadRadius);
-                    o.GetComponent<PopulatableObject>().Rigidbody.AddForce(Random.insideUnitSphere * Random.Range(0, MaxForceToApply));
+                    if (IsAddingInitialForce) o.GetComponent<PopulatableObject>().Rigidbody.AddForce(Random.insideUnitSphere * Random.Range(0, MaxForceToApply));
                 });
         }
     }
