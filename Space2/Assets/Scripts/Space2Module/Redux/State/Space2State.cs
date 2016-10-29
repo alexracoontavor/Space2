@@ -38,6 +38,14 @@ namespace Assets.Scripts.Space2Module.Redux.State
         public string ObjectType;
         public TransformData Transform;
         public RigidbodyData Rigidbody;
+        public PhysicsChangeRequest PendingPhysicsChange;
+    }
+
+    [Serializable]
+    public class PhysicsChangeRequest
+    {
+        public Vector3Data AngularVelocityChange = new Vector3Data();
+        public float ThrustChange = 0f;
     }
 
     [Serializable]

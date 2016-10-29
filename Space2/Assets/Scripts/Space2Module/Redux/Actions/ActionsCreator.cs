@@ -25,6 +25,17 @@ namespace Assets.Scripts.Space2Module.Redux.Actions
         {
             ModuluxRoot.Store.Dispatch(new SpeedChangeRequestAction() {Speed = newSpeed});
         }
+
+        public static void PhysicsChangeRequest(string id, PhysicsChangeRequest request)
+        {
+            ModuluxRoot.Store.Dispatch(new PhysicsChangeRequestAction() {Id = id, Request = request});
+        }
+    }
+
+    public class PhysicsChangeRequestAction : IAction
+    {
+        public PhysicsChangeRequest Request;
+        public string Id;
     }
 
     public class StepUpdateCompleteAction : IAction

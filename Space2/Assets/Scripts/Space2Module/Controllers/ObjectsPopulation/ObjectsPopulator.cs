@@ -28,8 +28,12 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
             if (_objectsData.Count(s=>s.Value.Populatable == obj || s.Value.Populatable.Id == obj.Id) != 0)
                 return;
 
-            var id = Guid.NewGuid().ToString();
-            obj.Id = id;
+            if (obj.Id == string.Empty)
+            {
+                var id = Guid.NewGuid().ToString();
+                obj.Id = id;
+            }
+
             _objectsData.Add(obj.Id, 
                 new PopulatableAndDataPair
                 {
@@ -48,6 +52,7 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
                 {
                    ObjectsPopulatorHelper.FromData(p.transform, d);
                    ObjectsPopulatorHelper.FromData(p.Rigidbody, d);
+                   ObjectsPopulatorHelper.ApplyPhysicsFromData(p.Rigidbody, d.PendingPhysicsChange);
                 }
             });
 

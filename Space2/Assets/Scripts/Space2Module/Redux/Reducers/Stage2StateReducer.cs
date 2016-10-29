@@ -22,8 +22,54 @@ namespace Assets.Scripts.Space2Module.Redux.Reducers
             };
         }
 
+        private static PhysicsChangeRequest UpdatePhysicsChangeRequest(PhysicsChangeRequest to, PhysicsChangeRequest from)
+        {
+            var answer = new PhysicsChangeRequest
+            {
+                AngularVelocityChange = to.AngularVelocityChange ?? new Vector3Data(),
+                ThrustChange = float.IsNaN(to.ThrustChange) ? 0f : to.ThrustChange
+            };
+
+            if (!float.IsNaN(from.ThrustChange))
+                answer.ThrustChange += from.ThrustChange;
+
+            if (@from.AngularVelocityChange == null) return answer;
+
+            answer.AngularVelocityChange.x += @from.AngularVelocityChange.x;
+            answer.AngularVelocityChange.y += @from.AngularVelocityChange.y;
+            answer.AngularVelocityChange.z += @from.AngularVelocityChange.z;
+
+            return answer;
+        }
+
         public static ObjectsTimeline ReduceTimeline(Space2State prevState, IAction action)
         {
+            var physicsChangeRequestAction = action as PhysicsChangeRequestAction;
+
+            if (physicsChangeRequestAction != null)
+            {
+                if (prevState.Timeline == null || prevState.Timeline.CurrentObjects == null)
+                    return prevState.Timeline;
+
+                var player = prevState.Timeline.CurrentObjects.FirstOrDefault(o => o.Id == physicsChangeRequestAction.Id);
+
+                if (player != null)
+                {
+                    player.PendingPhysicsChange = player.PendingPhysicsChange == null? physicsChangeRequestAction.Request : UpdatePhysicsChangeRequest(player.PendingPhysicsChange, physicsChangeRequestAction.Request);
+
+                    return new ObjectsTimeline
+                    {
+                        Timeline = prevState.Timeline.Timeline,
+                        CurrentIndex = prevState.Timeline.CurrentIndex,
+                        GameSpeed = prevState.Timeline.GameSpeed,
+                        IsWaitingToUpdateObjects = prevState.Timeline.IsWaitingToUpdateObjects,
+                        CurrentObjects = prevState.Timeline.CurrentObjects.Where(o=>o.Id!=player.Id).Concat(new []{player}).ToArray()
+                    };
+                }
+
+                return prevState.Timeline;
+            }
+
             var dataUpdatedAction = action as ObjectsDataUpdatedAction;
 
             if (dataUpdatedAction != null)
@@ -92,18 +138,13 @@ namespace Assets.Scripts.Space2Module.Redux.Reducers
                 var t = isUnpausing
                     ? prevState.Timeline.Timeline.Take(prevState.Timeline.CurrentIndex).ToArray()
                     : prevState.Timeline.Timeline;
-
-                if (isUnpausing)
-                    Debug.Log("Unpausing");
-                if (isPausing)
-                    Debug.Log("Pausing");
-
+                
                 return new ObjectsTimeline
                 {
                     CurrentIndex = prevState.Timeline.CurrentIndex,
                     Timeline = t,
                     CurrentObjects = prevState.Timeline.CurrentObjects,
-                    IsWaitingToUpdateObjects = false,
+                    IsWaitingToUpdateObjects = isUnpausing,
                     GameSpeed = Mathf.Min(1f, Mathf.Max(0, speedChangeAction.Speed))
                 };
             }

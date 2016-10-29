@@ -12,11 +12,30 @@ namespace Assets.Scripts.Space2Module.Controllers.ObjectsPopulation
             return transform;
         }
 
+        public static Vector3 FromData(Vector3Data data)
+        {
+            return new Vector3(data.x, data.y, data.z);
+        }
+
+        public static Rigidbody ApplyPhysicsFromData(Rigidbody rigidbody, PhysicsChangeRequest data)
+        {
+            if (data == null)
+                return rigidbody;
+
+            if (data.AngularVelocityChange != null)
+                rigidbody.AddTorque(FromData(data.AngularVelocityChange));
+
+            if (!float.IsNaN(data.ThrustChange))
+                rigidbody.AddForce(rigidbody.transform.up * data.ThrustChange);
+
+            return rigidbody;
+        }
+
         public static Rigidbody FromData(Rigidbody rigidbody, ObjectData objectData)
         {
-            rigidbody.angularVelocity = new Vector3(objectData.Rigidbody.angularVelocity.x, objectData.Rigidbody.angularVelocity.y, objectData.Rigidbody.angularVelocity.z);
-            rigidbody.centerOfMass = new Vector3(objectData.Rigidbody.centerOfMass.x, objectData.Rigidbody.centerOfMass.y, objectData.Rigidbody.centerOfMass.z);
-            rigidbody.velocity = new Vector3(objectData.Rigidbody.velocity.x, objectData.Rigidbody.velocity.y, objectData.Rigidbody.velocity.z);
+            rigidbody.angularVelocity = FromData(objectData.Rigidbody.angularVelocity);
+            rigidbody.centerOfMass = FromData(objectData.Rigidbody.centerOfMass);
+            rigidbody.velocity = FromData(objectData.Rigidbody.velocity);
             rigidbody.drag = objectData.Rigidbody.drag;
             rigidbody.angularDrag = objectData.Rigidbody.angularDrag;
             rigidbody.mass = objectData.Rigidbody.mass;
